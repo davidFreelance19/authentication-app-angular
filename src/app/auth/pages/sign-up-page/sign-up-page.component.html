@@ -1,0 +1,46 @@
+<auth-title title="Sing Up"></auth-title>
+<form
+  class="flex flex-col gap-6 my-6"
+  [formGroup]="newAccountForm"
+  (ngSubmit)="onSubmit()"
+>
+  <shared-form-field
+    fieldName="name"
+    label="Your name"
+    type="text"
+    placeholder="e.g. 'John'"
+    [formGroup]="newAccountForm"
+  ></shared-form-field>
+
+  <shared-form-field
+    fieldName="lastname"
+    label="Your lastname"
+    type="text"
+    placeholder="e.g. 'Doe'"
+    [formGroup]="newAccountForm"
+  ></shared-form-field>
+
+  <shared-form-field
+    fieldName="email"
+    label="Email address"
+    type="text"
+    placeholder="e.g. alex@email.com"
+    [formGroup]="newAccountForm"
+  ></shared-form-field>
+
+  <shared-form-field
+    fieldName="password"
+    label="Password"
+    type="password"
+    placeholder="At least 8 characters"
+    [formGroup]="newAccountForm"
+  ></shared-form-field>
+
+  <shared-button text="Register"></shared-button>
+</form>
+
+<auth-navigatation
+  [text]="'Already have an account? '"
+  [url]="'/auth'"
+  [destination]="'Sign in'"
+></auth-navigatation>

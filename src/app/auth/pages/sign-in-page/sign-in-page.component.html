@@ -1,0 +1,38 @@
+<auth-title title="Sign In"></auth-title>
+<form
+  class="flex flex-col gap-6 my-6"
+  (ngSubmit)="onSubmit()"
+  [formGroup]="loginForm"
+>
+    <shared-form-field
+      fieldName="email"
+      label="Email address"
+      type="text"
+      placeholder="e.g. alex@email.com"
+      [formGroup]="loginForm"
+    ></shared-form-field>
+
+    <shared-form-field
+      fieldName="password"
+      label="Password"
+      type="password"
+      placeholder="Enter your password"
+      [formGroup]="loginForm"
+    ></shared-form-field>
+
+  <div class="justify-start">
+    <auth-navigatation
+      text="Forgot password? "
+      url="/auth/recupere-account"
+      destination=" Recupere account"
+      textAlign="text-end"
+    ></auth-navigatation>
+  </div>
+  <shared-button text="Access"></shared-button>
+</form>
+
+<auth-navigatation
+  [text]="'Don’t have an account? '"
+  [url]="'/auth/sign-up'"
+  [destination]="'Sign up'"
+></auth-navigatation>

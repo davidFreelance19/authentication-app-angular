@@ -1,0 +1,12 @@
+<auth-title title="Validate OTP Code"></auth-title>
+<form
+  class="flex flex-col gap-6 my-6"
+  [formGroup]="confirmOTPCodeForm"
+  (ngSubmit)="onSubmit()"
+>
+  <div class="card flex justify-center">
+    <p-inputOtp [length]="6"/>
+  </div>
+
+  <shared-button text="Confirm Account"></shared-button>
+</form>
