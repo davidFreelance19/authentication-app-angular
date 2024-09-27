@@ -12,13 +12,16 @@
       [formGroup]="loginForm"
     ></shared-form-field>
 
-    <shared-form-field
-      fieldName="password"
-      label="Password"
-      type="password"
-      placeholder="Enter your password"
-      [formGroup]="loginForm"
-    ></shared-form-field>
+  <shared-form-field
+    fieldName="password"
+    label="Password"
+    [type]="iconOneVisibility ? 'text' : 'password'"
+    placeholder="Enter your password"
+    [formGroup]="loginForm"
+    [iconName]="iconOneVisibility ? 'octEye' : 'octEyeClosed'"
+    [iconVisibility]="iconOneVisibility"
+    (iconVisibilityChange)="onIconVisibilityChange($event)"
+  ></shared-form-field>
 
   <div class="justify-start">
     <auth-navigatation
@@ -28,7 +31,7 @@
       textAlign="text-end"
     ></auth-navigatation>
   </div>
-  <shared-button text="Access"></shared-button>
+  <shared-button [text]="'Access'" [isLoading]="isLoading"></shared-button>
 </form>
 
 <auth-navigatation

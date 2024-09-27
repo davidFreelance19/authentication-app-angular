@@ -7,6 +7,9 @@ import { SingInPageComponent } from './pages/sign-in-page/sign-in-page.component
 import { RecupereAccountPageComponent } from './pages/recupere-account-page/recupere-account-page.component';
 import { SignUpPageComponent } from './pages/sign-up-page/sign-up-page.component';
 import { ChangePasswordPageComponent } from './pages/change-password-page/change-password-page.component';
+import { activeIsValidToken } from './guards/is-valid-token-sent-by-email.guard';
+import { NewCodeVerifyAccountComponent } from './pages/new-code-verify-account/new-code-verify-account.component';
+import { activeIsValidTokenNewCodeVerifyAccount } from './guards/new-code-verify-account.guard';
 
 
 const routes: Routes = [
@@ -23,16 +26,23 @@ const routes: Routes = [
         component: SignUpPageComponent
       },
       {
-        path: 'verify-account/:token',
+        path: 'view/verify-account/:token',
         component: VerifyAccountPageComponent,
+        canActivate: [activeIsValidToken]
+      },
+      {
+        path: 'new-code/verify-account/:token',
+        component: NewCodeVerifyAccountComponent,
+        canActivate: [activeIsValidTokenNewCodeVerifyAccount]
       },
       {
         path: 'recupere-account',
         component: RecupereAccountPageComponent
       },
       {
-        path: 'change-password/:token',
+        path: 'view/change-password/:token',
         component: ChangePasswordPageComponent,
+        canActivate: [activeIsValidToken]
       },
       {
         path: '**',

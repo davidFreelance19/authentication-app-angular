@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap, map, catchError, throwError, of } from 'rxjs';
+import { Observable, map, catchError, throwError, of } from 'rxjs';
 import { environments } from '../../../env/env';
-import { User } from '../../shared/interfaces/user.interface';
+import { User, UserResponse } from '../../shared/interfaces/user.interface';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,10 +21,10 @@ export class AuthService {
   }
 
 
-  registerAccount(email: string, password: string): Observable<boolean> {
-    return this.http.post<User>(`${this.baseUrl}/auth/new-account`, { email: email, password: password })
+  registerAccount(email: string, password: string, name: string, lastname: string): Observable<boolean> {
+    return this.http.post<User>(`${this.baseUrl}/auth/register`, { email, password, name, lastname })
       .pipe(
-        map(({ user }) => !!user),
+        map(( user ) => !!user),
         catchError(err => throwError(() => err.error.error))
       )
   }
@@ -38,41 +38,48 @@ export class AuthService {
   }
 
   recupereAccount(email: string): Observable<boolean> {
-    return this.http.post<User>(`${this.baseUrl}/auth/recupere-account`, { email: email })
+    return this.http.post<{ message: string}>(`${this.baseUrl}/auth/recupere-account`, { email: email })
       .pipe(
-        map(({ user }) => !!user),
+        map(({ message }) => !!message),
         catchError(err => throwError(() => err.error.error))
       )
   }
 
-  generateNewCode(path: string, email: string): Observable<boolean> {
-    return this.http.post<User>(`${this.baseUrl}/auth/${path}`, { email: email })
+  verifyAccount(code: string, token: string): Observable<boolean> {
+    return this.http.patch<{message: string}>(`${this.baseUrl}/auth/verify-account/${token}`, { code })
       .pipe(
-        map(({ user }) => !!user),
+        map(({ message }) => !!message),
         catchError(err => throwError(() => err.error.error))
       )
   }
 
-  validateOTPCode(code: string, path: string, token: string): Observable<boolean> {
-    return this.http.post<User>(`${this.baseUrl}/auth/${path}/${token}`, { code })
+  identityVerification(code: string, token: string): Observable<boolean> {
+    return this.http.get<{message: string}>(`${this.baseUrl}/auth/change-password/${token}?code=${code}`)
       .pipe(
-        map(({ user }) => !!user),
+        map(({ message }) => !!message),
+        catchError(err => throwError(() => err.error.error))
+      )
+  }
+  resetPassword(password: string, code: string, token: string) {
+    return this.http.patch<{message: string}>(`${this.baseUrl}/auth/change-password/${token}?code=${code}`, { password })
+      .pipe(
+        map(({ message }) => !!message),
         catchError(err => throwError(() => err.error.error))
       )
   }
 
-  resetPassword(password: string, repeatPassword: string, token: string) {
-    return this.http.post<User>(`${this.baseUrl}/auth/reset-password/${token}`, { password, repeatPassword })
+  validateTokenSentByEmail(token: string, path: string): Observable<boolean> {
+    return this.http.get<{message: string}>(`${this.baseUrl}/auth/view/${path}/${token}`)
       .pipe(
-        map(({ user }) => !!user),
-        catchError(err => throwError(() => err.error.error))
-      )
+        map(({ message }) => !!message),
+        catchError(() => of(false))
+      );
   }
 
-  validateToken(token: string, path: string): Observable<boolean> {
-    return this.http.get<User>(`${this.baseUrl}/auth/${path}/${token}`)
+  newCodeVerifyToken(token: string): Observable<boolean> {
+    return this.http.get<{message: string}>(`${this.baseUrl}/auth/new-code/${token}`)
       .pipe(
-        map(({ user }) => !!user),
+        map(({ message }) => !!message),
         catchError(() => of(false))
       );
   }
@@ -81,11 +88,11 @@ export class AuthService {
     const token = localStorage.getItem('token');
     if (!token) return of(false);
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`)
-    return this.http.get<User>(`${this.baseUrl}/auth/`, { headers })
+    return this.http.get<UserResponse>(`${this.baseUrl}/app/home`, { headers })
       .pipe(
-        map(({ user }: User) => {
-          this.user = { user }
-          return !!user
+        map((response: UserResponse) => {
+          this.user = response.user;
+          return !!response
         }),
         catchError(() => of(false))
       )

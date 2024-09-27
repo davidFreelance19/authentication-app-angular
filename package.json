@@ -18,6 +18,8 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
+    "@ng-icons/core": "^29.5.0",
+    "@ng-icons/octicons": "^29.5.0",
     "devlinks-app": "file:",
     "ngx-sonner": "^0.4.1",
     "primeng": "^17.18.10",

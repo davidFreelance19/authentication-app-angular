@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ValidatorsService } from '../../../shared/service/validators.service';
 import { AuthService } from '../../services/auth.service';
 import { ValidatorsAuthService } from '../../services/validatorsAuth.service';
+import { ValidatorsService } from '../../../shared/service/validators.service';
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'auth-sign-up-page',
@@ -10,50 +11,66 @@ import { ValidatorsAuthService } from '../../services/validatorsAuth.service';
 })
 export class SignUpPageComponent {
 
+  iconOneVisibility: boolean = false;
+  isLoading: boolean = false; 
+  readonly toast = toast;
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private customValidator: ValidatorsService,
-    private authValidator: ValidatorsAuthService
+    private authValidator: ValidatorsAuthService,
+    private validatorsService: ValidatorsService
   ) { }
 
-  public newAccountForm: FormGroup = this.fb.group({
+  newAccountForm: FormGroup = this.fb.group({
     email: ["", [Validators.required, Validators.pattern(this.authValidator.emailPattern)]],
-    password: ["", [Validators.required, Validators.minLength(8)]],
-    name: ["", [Validators.required, Validators.minLength(3)]],
-    lastname: ["", [Validators.required, Validators.minLength(3)]],
-    repeatPassword: ["", [Validators.required, Validators.minLength(8)]],
+    password: [
+      "", 
+      [Validators.required, Validators.minLength(6), Validators.maxLength(20), Validators.pattern(this.validatorsService.passwordPattern)]
+    ],
+    name: [
+      "", 
+      [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(this.validatorsService.namePattern)]
+    ],
+    lastname: [
+      "", 
+      [Validators.required, Validators.minLength(2),Validators.maxLength(50), Validators.pattern(this.validatorsService.lastnamePattern)]
+    ],
   }, {
     updateOn: 'submit',
-    validators: [
-      this.customValidator.isFieldOneEqualFieldTwo('password', 'repeatPassword')
-    ]
   });
 
-  isInvalidField(field: string) {
-    return this.customValidator.isInvalidField(this.newAccountForm, field);
-  }
-
-  errorsField(field: string): string | null {
-    return this.authValidator.getFieldError(this.newAccountForm, field);
-  }
-
-  public onSubmit(): void {
+  onSubmit(): void {
+ 
     if (this.newAccountForm.invalid) {
       this.newAccountForm.markAllAsTouched();
       return;
     }
+    this.isLoading = true;
 
     const email = this.newAccountForm.controls['email'].value;
     const password = this.newAccountForm.controls['password'].value;
+    const name = this.newAccountForm.controls['name'].value;
+    const lastname = this.newAccountForm.controls['lastname'].value;
 
-    this.authService.registerAccount(email, password)
+    this.authService.registerAccount(email, password, name, lastname)
       .subscribe({
         next: () => {
-          this.newAccountForm.reset();
+          this.isLoading = false; 
+          this.newAccountForm.reset();         
+          toast.success('Account created successfully',
+            {
+              description: 'Check your email and verify your account.'
+            }
+          );
         },
-        error: (error) => this.authValidator.handleFormError(this.newAccountForm, error)
+        error: (error) => {
+          this.isLoading = false;
+          this.authValidator.handleFormErrorByAPI(this.newAccountForm, error);
+        }
       })
   }
-
+  onIconVisibilityChange(newVisibility: boolean): void {
+    this.iconOneVisibility = newVisibility;
+  }
 }

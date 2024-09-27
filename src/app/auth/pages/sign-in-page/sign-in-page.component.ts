@@ -11,6 +11,9 @@ import { ValidatorsAuthService } from '../../services/validatorsAuth.service';
 })
 export class SingInPageComponent {
 
+  iconOneVisibility: boolean = false;
+  isLoading: boolean = false; 
+  
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -18,28 +21,37 @@ export class SingInPageComponent {
     private authValidator: ValidatorsAuthService
   ) { }
 
-  public loginForm: FormGroup = this.fb.group(
+  loginForm: FormGroup = this.fb.group(
     {
       email: ["", [Validators.required, Validators.pattern(this.authValidator.emailPattern)]],
-      password: ["", [Validators.required], []]
+      password: ["", [Validators.required]]
     }, { updateOn: 'submit', }
   );
 
-  public onSubmit(): void {
+  onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
+    this.isLoading = true;
     const email = this.loginForm.controls['email'].value;
     const password = this.loginForm.controls['password'].value;
 
     this.authService.login(email, password)
       .subscribe({
         next: () => {
-          this.router.navigateByUrl('/admin');
+          this.isLoading = false; 
+          this.router.navigateByUrl('/app');
         },
-        error: (error) => this.authValidator.handleFormError(this.loginForm, error)
+        error: (error) => {
+          this.isLoading = false; 
+          this.authValidator.handleFormErrorByAPI(this.loginForm, error);
+        }
       })
+  }
+
+  onIconVisibilityChange(newVisibility: boolean): void {
+    this.iconOneVisibility = newVisibility;
   }
 }

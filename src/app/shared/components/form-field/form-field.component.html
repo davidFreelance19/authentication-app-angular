@@ -1,18 +1,24 @@
 <div [formGroup]="formGroup" class="flex flex-col gap-2">
-  <div
-    class="flex justify-between"
-  >
+  <div class="flex justify-between">
     <label class="text-sm" [for]="fieldName">{{ label }}</label>
     <span *ngIf="isInvalidField(fieldName)" class="text-sm text-red-500">
       {{ errorsField(fieldName) }}
     </span>
   </div>
-  <input
-    [type]="type"
-    [id]="fieldName"
-    [placeholder]="placeholder"
-    class="p-[10px] border rounded-md"
-    [formControlName]="fieldName"
-    [ngClass]="{ 'border-red-500': isInvalidField(fieldName) }"
-  />
+  <div class="relative">
+    <input
+      [type]="type"
+      [id]="fieldName"
+      [placeholder]="placeholder"
+      class="p-[10px] border rounded-md w-full pr-10"
+      [formControlName]="fieldName"
+      [ngClass]="{ 'border-red-500': isInvalidField(fieldName) }"
+    />
+    <ng-icon 
+      *ngIf="iconName != ''" 
+      name={{iconName}} 
+      class="absolute right-2 top-1/2 transform -translate-y-1/2 hover:cursor-pointer"
+      (click)="onClickIcon()"
+    ></ng-icon>
+  </div>
 </div>

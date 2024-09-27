@@ -1,5 +1,15 @@
+@import "primeng/resources/themes/lara-light-blue/theme.css";
+@import "primeng/resources/primeng.css";
 
+/* Tailwind CSS directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+.p-inputotp-input {
+    @apply border border-gray-300 rounded-md p-2;
+}
+
+.p-progress-spinner {
+  @apply w-4 h-6 p-2 justify-center flex;
+}

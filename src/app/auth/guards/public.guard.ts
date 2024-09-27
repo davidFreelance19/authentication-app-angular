@@ -10,7 +10,7 @@ const isAuthtenticated = (): Observable<boolean> => {
   return authService.auth()
     .pipe(
       tap(isAuth => {
-        if (isAuth) router.navigate(['./admin']);
+        if (isAuth) router.navigate(['./app']);
       }),
       map(isAuth => !isAuth)
     )

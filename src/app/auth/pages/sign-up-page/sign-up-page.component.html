@@ -6,7 +6,7 @@
 >
   <shared-form-field
     fieldName="name"
-    label="Your name"
+    label="Name"
     type="text"
     placeholder="e.g. 'John'"
     [formGroup]="newAccountForm"
@@ -14,7 +14,7 @@
 
   <shared-form-field
     fieldName="lastname"
-    label="Your lastname"
+    label="Lastname"
     type="text"
     placeholder="e.g. 'Doe'"
     [formGroup]="newAccountForm"
@@ -31,12 +31,15 @@
   <shared-form-field
     fieldName="password"
     label="Password"
-    type="password"
+    [type]="iconOneVisibility ? 'text' : 'password'"
     placeholder="At least 8 characters"
     [formGroup]="newAccountForm"
+    [iconName]="iconOneVisibility ? 'octEye' : 'octEyeClosed'"
+    [iconVisibility]="iconOneVisibility"
+    (iconVisibilityChange)="onIconVisibilityChange($event)"
   ></shared-form-field>
 
-  <shared-button text="Register"></shared-button>
+  <shared-button text="Register" [isLoading]="isLoading"></shared-button>
 </form>
 
 <auth-navigatation

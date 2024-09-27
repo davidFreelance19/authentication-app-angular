@@ -1,63 +1,131 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ValidatorsService } from '../../../shared/service/validators.service';
 import { AuthService } from '../../services/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { ValidatorsService } from '../../../shared/service/validators.service';
 import { ValidatorsAuthService } from '../../services/validatorsAuth.service';
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'auth-change-password-page',
   templateUrl: './change-password-page.component.html',
 })
 export class ChangePasswordPageComponent implements OnInit {
-  private token: string = '';
+  readonly toast = toast;
 
+  iconOneVisibilityNewPassword: boolean = false;
+  iconOneVisibilityRepeatPassword: boolean = false;
+
+  identityVerification: boolean = true;
+  isLoading: boolean = false;
+  changePasswordSuccess: boolean = false;
+
+  private token: string = '';
+  
   constructor(
     private fb: FormBuilder,
-    private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private customValidator: ValidatorsService,
-    private authValidator: ValidatorsAuthService
+    private authValidator: ValidatorsAuthService,
+    private customValidator: ValidatorsService
   ) { }
 
   ngOnInit(): void {
     this.token = this.route.snapshot.paramMap.get('token') ?? '';
   }
 
-  public resetPasswordForm: FormGroup = this.fb.group({
-    password: ["", [Validators.required, Validators.minLength(8)]],
-    repeatPassword: ["", [Validators.required, Validators.minLength(8)]],
-  }, {
-    updateOn: 'submit',
-    validators: [
-      this.customValidator.isFieldOneEqualFieldTwo('password', 'repeatPassword')
-    ]
-  });
+  private readonly CODE_VALIDATORS = [
+    Validators.required, 
+    Validators.minLength(5), 
+    Validators.maxLength(5)
+  ];
 
-  isInvalidField(field: string) {
-    return this.customValidator.isInvalidField(this.resetPasswordForm, field);
+  private readonly PASSWORD_VALIDATORS = [
+    Validators.required, 
+    Validators.minLength(6), 
+    Validators.maxLength(20), 
+    Validators.pattern(this.customValidator.passwordPattern)
+  ];
+
+  identityVerificationForm: FormGroup = this.fb.group({
+    code: ["", this.CODE_VALIDATORS],
+  }, { updateOn: 'submit' });
+
+  resetPasswordForm: FormGroup = this.fb.group({
+    password: ["", this.PASSWORD_VALIDATORS],
+    repeatPassword: ["", this.PASSWORD_VALIDATORS],
+  }, { updateOn: 'submit', validators: this.customValidator.passwordMatchValidator('password', 'repeatPassword') });
+
+  errorsFieldIdentityVerification(field: string): string | null { 
+    return this.customValidator.getFieldErrorByForm(this.identityVerificationForm, field) ?? 
+    this.authValidator.getFieldErrorByAPI(this.identityVerificationForm, field); 
   }
 
-  errorsField(field: string): string | null {
-    return this.authValidator.getFieldError(this.resetPasswordForm, field);
+  isInvalidFieldIdentityVerification(field: string): boolean | null { 
+    return this.customValidator.isInvalidField(this.identityVerificationForm, field); 
   }
 
-  public onSubmit(): void {
-    if (this.resetPasswordForm.invalid) {
-      this.resetPasswordForm.markAllAsTouched();
+  onIconVisibilityChangeNewPassword(newVisibility: boolean): void {
+    this.iconOneVisibilityNewPassword = newVisibility;
+  }
+
+  onIconVisibilityChangeRepeatPassword(newVisibility: boolean): void {
+    this.iconOneVisibilityRepeatPassword = newVisibility;
+  }
+
+  private handleFormSubmission(form: FormGroup, callback: () => void): void {
+    if (form.invalid) {
+      form.markAllAsTouched();
       return;
     }
-    const password = this.resetPasswordForm.controls['password'].value;
-    const repeatPassword = this.resetPasswordForm.controls['repeatPassword'].value;
+    callback();
+  }
 
-    this.authService.resetPassword(password, repeatPassword, this.token)
-      .subscribe({
-        next: () => {
-          this.resetPasswordForm.reset();
-          this.router.navigateByUrl('/auth/login');
-        },
-        error: (error) => { }
-      })
+   onSubmitChangePassword(): void {
+    this.handleFormSubmission(this.resetPasswordForm, () => {
+      const password = this.resetPasswordForm.controls['password'].value;
+      const code = this.identityVerificationForm.controls['code'].value;
+
+      this.isLoading= true;
+      this.authService.resetPassword(password, code, this.token)
+        .subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.resetPasswordForm.reset();
+            this.changePasswordSuccess = true;
+          },
+          error: (error) => { 
+            this.isLoading = false;
+            toast.error('Invalid code.',
+              {
+                description: 'Check your code and expiration time.'
+              }
+            );
+          }
+        });
+    });
+  }
+
+   onSubmitIdentityVerification(): void {
+    this.handleFormSubmission(this.identityVerificationForm, () => {
+      const code = this.identityVerificationForm.controls['code'].value;
+      this.isLoading= true;
+      
+      this.authService.identityVerification(code, this.token)
+        .subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.identityVerification = true;
+          },
+          error: (error) => {
+            this.isLoading = false;
+            toast.error('Invalid code.',
+              {
+                description: 'Check your code and expiration time.'
+              }
+            );
+           }
+        });
+    });
   }
 }

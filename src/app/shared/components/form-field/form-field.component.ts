@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { ValidatorsService } from '../../service/validators.service';
 import { ValidatorsAuthService } from '../../../auth/services/validatorsAuth.service';
@@ -24,11 +24,22 @@ export class FormFieldComponent {
 
   @Input() formGroup!: FormGroup;
 
+  @Input() iconName: string = '';
+
+  @Input() iconVisibility: boolean = false;
+
+  @Output() iconVisibilityChange = new EventEmitter<boolean>();
+
   isInvalidField(field: string): boolean | null {
     return this.customValidator.isInvalidField(this.formGroup, field);
   }
 
   errorsField(field: string): string | null {
-    return this.authValidator.getFieldError(this.formGroup, field);
+    return this.customValidator.getFieldErrorByForm(this.formGroup, field) ?? this.authValidator.getFieldErrorByAPI(this.formGroup, field);
+  }
+
+  onClickIcon() {
+    this.iconVisibility = !this.iconVisibility;
+    this.iconVisibilityChange.emit(this.iconVisibility);
   }
 }

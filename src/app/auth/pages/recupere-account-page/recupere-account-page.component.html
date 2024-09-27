@@ -11,7 +11,7 @@
     placeholder="e.g. alex@email.com"
     [formGroup]="recupereAccountForm"
   ></shared-form-field>
-  <shared-button text="Send e-mail"></shared-button>
+  <shared-button text="Send e-mail" [isLoading]="isLoading"></shared-button>
 </form>
 <auth-navigatation
   text="Remember your password? "

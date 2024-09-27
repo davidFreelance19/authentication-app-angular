@@ -19,5 +19,5 @@ module.exports = {
         };
         addUtilities(newUtilities);
     },
-],
+  ],
 }

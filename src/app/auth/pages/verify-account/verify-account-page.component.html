@@ -1,12 +1,21 @@
-<auth-title title="Validate OTP Code"></auth-title>
+<auth-title title="Verify Account"></auth-title>
 <form
   class="flex flex-col gap-6 my-6"
-  [formGroup]="confirmOTPCodeForm"
+  [formGroup]="verifyAccount"
   (ngSubmit)="onSubmit()"
 >
-  <div class="card flex justify-center">
-    <p-inputOtp [length]="6"/>
+  <div class="flex flex justify-between border-b py-2">
+    <label class="text-sm" for="code">Your verification code</label>
+    <span
+      *ngIf="isInvalidField('code')"
+      class="text-sm text-red-500"
+    >
+      {{ errorsField('code') }}
+    </span>
+  </div>
+  <div class="flex justify-center">
+    <p-inputOtp [length]="5" formControlName="code"></p-inputOtp>
   </div>
 
-  <shared-button text="Confirm Account"></shared-button>
+  <shared-button text="Verify" [isLoading]="isLoading"></shared-button>
 </form>

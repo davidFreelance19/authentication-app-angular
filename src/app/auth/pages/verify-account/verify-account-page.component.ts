@@ -2,82 +2,70 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { ValidatorsService } from '../../../shared/service/validators.service';
 import { AuthService } from '../../services/auth.service';
 import { ValidatorsAuthService } from '../../services/validatorsAuth.service';
+import { ValidatorsService } from '../../../shared/service/validators.service';
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'auth-verify-account-page',
   templateUrl: './verify-account-page.component.html',
 })
 export class VerifyAccountPageComponent implements OnInit {
-
-  public title: string = '';
-  public description: string = '';
-  public value : any;
+  readonly toast = toast;
   private token: string = '';
-  private path: string = '';
+  isLoading: boolean = false; 
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private customValidator: ValidatorsService,
-    private authValidator: ValidatorsAuthService
+    private authValidator: ValidatorsAuthService,
+    private customValidator: ValidatorsService
   ) { }
-
-  routeData: { [key: string]: { title: string; description: string; } } = {
-    'auth-reset-password': {
-      title: 'Verification',
-      description: 'Provide the OTP code for verification of your person.'
-    },
-    'verify-account': {
-      title: 'Confirm account',
-      description: 'Provide the OTP code to confirm your account.'
-    }
-  };
 
   ngOnInit(): void {
     this.token = this.route.snapshot.paramMap.get('token') ?? '';
-    this.path = this.route.snapshot.url[0].path ?? '';
-
-    const routeInfo = this.routeData[this.path];
-
-    this.title = routeInfo.title;
-    this.description = routeInfo.description;
   }
 
-  public confirmOTPCodeForm: FormGroup = this.fb.group({
-    otpCode: ["", Validators.required]
+  public verifyAccount: FormGroup = this.fb.group({
+    code: ["", [Validators.required, Validators.minLength(5), Validators.maxLength(5)]]
   });
 
-
-  isInvalidField(field: string) {
-    return this.customValidator.isInvalidField(this.confirmOTPCodeForm, field);
+  isInvalidField(field: string): boolean | null {
+    return this.customValidator.isInvalidField(this.verifyAccount, field);
   }
 
   errorsField(field: string): string | null {
-    return this.authValidator.getFieldError(this.confirmOTPCodeForm, field);
+    return this.customValidator.getFieldErrorByForm(this.verifyAccount, field) ?? 
+      this.authValidator.getFieldErrorByAPI(this.verifyAccount, field);
   }
 
-  public onSubmit(): void {
-
-    if (this.confirmOTPCodeForm.invalid) {
-      this.confirmOTPCodeForm.markAllAsTouched();
+  onSubmit(): void {
+    if (this.verifyAccount.invalid) {
+      this.verifyAccount.markAllAsTouched();
       return;
     }
-    const odtCode = this.confirmOTPCodeForm.controls['otpCode'].value;
 
-    this.authService.validateOTPCode(odtCode, this.path, this.token)
+    this.isLoading = true;
+    const code = this.verifyAccount.controls['code'].value;
+    
+    this.authService.verifyAccount(code, this.token)
       .subscribe({
         next: () => {
-          if (this.path === 'auth-reset-password') this.router.navigateByUrl(`auth/reset-password/${this.token}`);
-          if(this.path === 'verify-account') this.router.navigateByUrl(`auth/login`);
-          this.confirmOTPCodeForm.reset()
+          this.isLoading = false;
+          this.verifyAccount.reset();
+          this.router.navigateByUrl(`auth/sign-in`);
         },
-        error: (error) => this.authValidator.handleFormError(this.confirmOTPCodeForm, error)
-      })
+        error: (error) => {
+          this.isLoading = false;
+          toast.error('Invalid code.',
+            {
+              description: 'Check your code and expiration time.'
+            }
+          );
+        }
+      });
   }
-
 }
